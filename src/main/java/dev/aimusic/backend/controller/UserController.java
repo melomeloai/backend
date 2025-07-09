@@ -1,5 +1,6 @@
 package dev.aimusic.backend.controller;
 
+import dev.aimusic.backend.config.AbstractController;
 import dev.aimusic.backend.user.UserService;
 import dev.aimusic.backend.user.dao.UserModel;
 import lombok.RequiredArgsConstructor;

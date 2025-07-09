@@ -1,4 +1,4 @@
-package dev.aimusic.backend.controller;
+package dev.aimusic.backend.config;
 
 import dev.aimusic.backend.user.UserService;
 import dev.aimusic.backend.user.dao.UserModel;

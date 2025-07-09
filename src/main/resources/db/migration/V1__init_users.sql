@@ -6,7 +6,7 @@ CREATE TABLE users (
     email TEXT NOT NULL,
     name TEXT,
     avatar_url TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 
     CONSTRAINT users_provider_external_id_unique UNIQUE (provider, external_id),
 );
