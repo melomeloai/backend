@@ -20,18 +20,16 @@ import java.util.UUID;
 public class UserModel {
     @Id
     @Column(nullable = false, updatable = false)
+    @Builder.Default
     private String id = UUID.randomUUID().toString();
-
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
+    private String provider;
+    @Column(nullable = false)
+    private String externalId;
+    @Column(nullable = false)
     private String email;
-
-    @Column(nullable = false, unique = true)
-    private String googleSub;
-
     private String name;
-
     private String avatarUrl;
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt;

@@ -15,13 +15,11 @@ spring:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
-
   datasource:
     url: jdbc:postgresql://localhost:5432/mydb
-    username: myuser
-    password: mypassword
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_SECRET}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -29,3 +27,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true

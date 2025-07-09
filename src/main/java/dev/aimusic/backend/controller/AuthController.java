@@ -1,5 +1,6 @@
 package dev.aimusic.backend.controller;
 
+import dev.aimusic.backend.auth.AuthUser;
 import dev.aimusic.backend.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +19,18 @@ public class AuthController extends AbstractController {
 
     @GetMapping("/auth/oauth2/success")
     public RedirectView handleLoginSuccess(OAuth2AuthenticationToken auth, HttpSession session) {
-        var attrs = auth.getPrincipal().getAttributes();
+        var userInfo = new AuthUser(auth.getAuthorizedClientRegistrationId(),
+                auth.getPrincipal().getAttributes());
 
-        var sub = (String) attrs.get("sub");
-        var email = (String) attrs.get("email");
-        var name = (String) attrs.get("name");
-        var avatar = (String) attrs.get("picture");
+        var user = userService.createOrUpdate(
+                userInfo.getProvider(),
+                userInfo.getExternalId(),
+                userInfo.getEmail(),
+                userInfo.getName(),
+                userInfo.getAvatarUrl()
+        );
 
-        var userModel = userService.createOrUpdateByGoogleInfo(sub, email, name, avatar);
-        session.setAttribute(SESSION_USER_ID, userModel.getId());
+        session.setAttribute(SESSION_USER_ID, user.getId());
 
         return new RedirectView("/users/me");
     }
