@@ -1,7 +1,7 @@
 package dev.aimusic.backend.user;
 
+import dev.aimusic.backend.user.dao.UserDao;
 import dev.aimusic.backend.user.dao.UserModel;
-import dev.aimusic.backend.user.dao.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +10,10 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserRepository userRepository;
+    private final UserDao userDao;
 
     public UserModel findById(String id) {
-        return userRepository.findById(id).orElse(null);
+        return userDao.findById(id);
     }
 
     public UserModel createOrUpdate(String provider,
@@ -21,8 +21,7 @@ public class UserService {
                                     String email,
                                     String name,
                                     String avatarUrl) {
-        var user = userRepository.findByProviderAndExternalId(provider, externalId)
-                .orElse(null);
+        var user = userDao.findByProviderAndExternalId(provider, externalId);
 
         if (Objects.nonNull(user)) {
             user.setEmail(email);
@@ -38,7 +37,7 @@ public class UserService {
                     .build();
         }
 
-        return userRepository.save(user);
+        return userDao.save(user);
     }
 
 }
