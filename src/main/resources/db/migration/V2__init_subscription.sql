@@ -11,9 +11,21 @@ CREATE TABLE subscriptions (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE user_credits (
-    user_id TEXT PRIMARY KEY,
+CREATE TABLE credits (
+    user_id TEXT NOT NULL,
+    plan TEXT NOT NULL,
     credits INT NOT NULL DEFAULT 0,
     last_reset_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    next_reset_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, plan)
+);
+
+CREATE TABLE credits_history  (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    plan TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
