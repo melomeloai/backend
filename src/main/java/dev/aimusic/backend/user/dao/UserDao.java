@@ -8,16 +8,11 @@ import org.springframework.stereotype.Service;
 public class UserDao {
     private final UserRepository userRepository;
 
-    public UserModel findById(String id) {
-        return userRepository.findById(id).orElse(null);
-    }
-
-    public UserModel findByProviderAndExternalId(String provider, String externalId) {
-        return userRepository.findByProviderAndExternalId(provider, externalId).orElse(null);
+    public UserModel findByClerkId(String clerkId) {
+        return userRepository.findByClerkId(clerkId).orElse(null);
     }
 
     public UserModel save(UserModel user) {
         return userRepository.save(user);
     }
-
 }

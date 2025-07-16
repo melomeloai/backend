@@ -1,8 +1,7 @@
 package dev.aimusic.backend.subscription.dao;
 
-public enum UserPlan {
+public enum PlanType {
     FREE,
     PRO,
     PREMIUM,
-    API_KEY,
 }

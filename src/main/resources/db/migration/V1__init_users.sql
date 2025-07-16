@@ -1,12 +1,9 @@
 -- 创建用户表
 CREATE TABLE users (
-    id TEXT PRIMARY KEY,
-    provider TEXT NOT NULL,
-    external_id TEXT NOT NULL,
+    id SERIAL PRIMARY KEY,
     email TEXT NOT NULL,
     name TEXT,
-    avatar_url TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-
-    CONSTRAINT users_provider_external_id_unique UNIQUE (provider, external_id),
+    clerk_id TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

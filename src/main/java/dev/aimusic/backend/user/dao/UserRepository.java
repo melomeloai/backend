@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<UserModel, String> {
-    Optional<UserModel> findByProviderAndExternalId(String provider, String externalId);
+public interface UserRepository extends JpaRepository<UserModel, Long> {
+    Optional<UserModel> findByClerkId(String clerkId);
 }
 

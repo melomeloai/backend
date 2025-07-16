@@ -1,12 +1,20 @@
 package dev.aimusic.backend.subscription.dao;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "subscriptions")
@@ -16,33 +24,32 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class SubscriptionModel {
+
     @Id
-    @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private String id = UUID.randomUUID().toString();
+    @Column(nullable = false, unique = true)
+    private Long userId;
 
-    @Column(nullable = false)
-    private String userId;
-
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String stripeCustomerId;
 
-    private String stripeSubscriptionId;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserPlan plan; // FREE, PRO, PREMIUM
+    private PlanType currentPlan;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SubscriptionStatus status;
+    private Integer currentCredit;
 
-    private OffsetDateTime currentPeriodStart;
-    private OffsetDateTime currentPeriodEnd;
+    @Column(nullable = false)
+    private OffsetDateTime lastResetAt;
+
+    @Column(nullable = false)
+    private OffsetDateTime nextResetAt;
 
     @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private OffsetDateTime updatedAt;
 }

@@ -1,5 +1,6 @@
 package dev.aimusic.backend.user;
 
+import dev.aimusic.backend.subscription.SubscriptionService;
 import dev.aimusic.backend.user.dao.UserDao;
 import dev.aimusic.backend.user.dao.UserModel;
 import lombok.RequiredArgsConstructor;
@@ -11,33 +12,28 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class UserService {
     private final UserDao userDao;
+    private final SubscriptionService subscriptionService;
 
-    public UserModel findById(String id) {
-        return userDao.findById(id);
-    }
-
-    public UserModel createOrUpdate(String provider,
-                                    String externalId,
-                                    String email,
-                                    String name,
-                                    String avatarUrl) {
-        var user = userDao.findByProviderAndExternalId(provider, externalId);
-
-        if (Objects.nonNull(user)) {
-            user.setEmail(email);
-            user.setName(name);
-            user.setAvatarUrl(avatarUrl);
-        } else {
-            user = UserModel.builder()
-                    .provider(provider)
-                    .externalId(externalId)
-                    .email(email)
-                    .name(name)
-                    .avatarUrl(avatarUrl)
-                    .build();
+    public UserModel findOrCreateUser(String clerkId, String email, String name) {
+        // Check if user already exists
+        var existingUser = userDao.findByClerkId(clerkId);
+        if (Objects.nonNull(existingUser)) {
+            return existingUser;
         }
 
-        return userDao.save(user);
+        // Create a new user
+        var user = UserModel.builder()
+                .clerkId(clerkId)
+                .email(email)
+                .name(name)
+                .build();
+        var savedUser = userDao.save(user);
+
+        // Create a subscription for the new user
+        subscriptionService.initSubscription(savedUser);
+
+        // Save the user
+        return savedUser;
     }
 
 }
