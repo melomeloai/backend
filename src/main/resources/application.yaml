@@ -22,3 +22,6 @@ clients:
     jwt-issuer: ${CLERK_JWT_ISSUER}
   stripe:
     api-key: ${STRIPE_API_KEY}
+    monthly-price-ids:
+      PRO: ${STRIPE_MONTHLY_PRICE_ID_PRO}
+      PREMIUM: ${STRIPE_MONTHLY_PRICE_ID_PREMIUM}
