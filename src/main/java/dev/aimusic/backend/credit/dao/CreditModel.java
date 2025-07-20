@@ -1,4 +1,4 @@
-package dev.aimusic.backend.user.dao;
+package dev.aimusic.backend.credit.dao;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,24 +16,29 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "credits")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserModel {
+public class CreditModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "clerk_id", unique = true, nullable = false)
-    private String clerkId;
+    @Column(name = "user_id", unique = true, nullable = false)
+    private Long userId;
 
-    @Column(name = "email", unique = true, nullable = false)
-    private String email;
+    @Column(name = "permanent_credits", nullable = false)
+    @Builder.Default
+    private Integer permanentCredits = 0;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "renewable_credits", nullable = false)
+    @Builder.Default
+    private Integer renewableCredits = 0;
+
+    @Column(name = "last_reset_time")
+    private LocalDateTime lastResetTime;
 
     @CreationTimestamp
     @Column(name = "created_at")

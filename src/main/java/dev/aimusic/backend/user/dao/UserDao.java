@@ -1,15 +1,24 @@
 package dev.aimusic.backend.user.dao;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
-@Service
+import java.util.Optional;
+
+@Component
 @RequiredArgsConstructor
+@Slf4j
 public class UserDao {
+
     private final UserRepository userRepository;
 
-    public UserModel findByClerkId(String clerkId) {
-        return userRepository.findByClerkId(clerkId).orElse(null);
+    public Optional<UserModel> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public Optional<UserModel> findByClerkId(String clerkId) {
+        return userRepository.findByClerkId(clerkId);
     }
 
     public UserModel save(UserModel user) {

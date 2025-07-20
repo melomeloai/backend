@@ -8,8 +8,7 @@ import org.springframework.validation.annotation.Validated;
 @Data
 @Component
 @Validated
-@ConfigurationProperties(prefix = "clerk")
-public class ClerkProperties {
-    private String apiKey;
-    private String jwtIssuer;
+@ConfigurationProperties(prefix = "ui")
+public class UIProperties {
+    private String baseUrl;
 }

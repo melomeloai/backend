@@ -16,12 +16,22 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
-clients:
-  clerk:
-    api-key: ${CLERK_API_KEY}
-    jwt-issuer: ${CLERK_JWT_ISSUER}
-  stripe:
-    api-key: ${STRIPE_API_KEY}
-    monthly-price-ids:
-      PRO: ${STRIPE_MONTHLY_PRICE_ID_PRO}
-      PREMIUM: ${STRIPE_MONTHLY_PRICE_ID_PREMIUM}
+ui:
+  base-url: ${UI_BASE_URL}
+
+clerk:
+  api-key: ${CLERK_API_KEY}
+  jwt-issuer: ${CLERK_JWT_ISSUER}
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  success-url: ${ui.base-url}/account
+  cancel-url: ${ui.base-url}/account/cancel
+  return-url: ${ui.base-url}/account
+  pro-product-id: ${STRIPE_PRO_PRODUCT_ID}
+  premium-product-id: ${STRIPE_PREMIUM_PRODUCT_ID}
+  pro-monthly-price-id: ${STRIPE_PRO_MONTHLY_PRICE_ID}
+  pro-yearly-price-id: ${STRIPE_PRO_YEARLY_PRICE_ID}
+  premium-monthly-price-id: ${STRIPE_PREMIUM_MONTHLY_PRICE_ID}
+  premium-yearly-price-id: ${STRIPE_PREMIUM_YEARLY_PRICE_ID}

@@ -1,6 +1,9 @@
 package dev.aimusic.backend.clients.stripe;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.stripe.StripeClient;
+import com.stripe.exception.SignatureVerificationException;
+import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.billingportal.SessionCreateParams;
 import dev.aimusic.backend.config.StripeProperties;
@@ -18,7 +21,7 @@ public class StripeService {
 
     public StripeService(StripeProperties stripeProperties) {
         this.stripeProperties = stripeProperties;
-        this.stripeClient = new StripeClient(stripeProperties.getApiKey());
+        this.stripeClient = new StripeClient(stripeProperties.getSecretKey());
     }
 
     public String createCustomer(String email) {
@@ -34,47 +37,115 @@ public class StripeService {
         }
     }
 
-    public String createSubscriptionPortalSession(
-            String customerId,
-            String returnUrl) {
-        var sessionParams = SessionCreateParams.builder()
-                .setCustomer(customerId)
-                .setReturnUrl(returnUrl)
-                .build();
+    /**
+     * 创建checkout session
+     */
+    public String createCheckoutSession(String customerId, PlanType planType, String billingCycle, Long userId) {
         try {
-            var session = stripeClient.billingPortal().sessions().create(sessionParams);
+            var sessionParams = buildCheckoutSessionParams(customerId, planType, billingCycle, userId);
+            var session = stripeClient.checkout().sessions().create(sessionParams);
+
+            log.info("Created checkout session for customer {}: {}", customerId, session.getId());
             return session.getUrl();
+
         } catch (Exception e) {
-            // Fail the request if portal session creation fails
-            throw new RuntimeException("Failed to create Stripe portal session", e);
+            log.error("Failed to create checkout session for customer {}: {}", customerId, e.getMessage());
+            throw new RuntimeException("Failed to create checkout session", e);
         }
     }
 
-    public String createSubscriptionCheckoutSession(
-            String customerId,
-            PlanType planType,
-            String successUrl,
-            String cancelUrl) {
-        var priceId = stripeProperties.getMonthlyPriceIds().get(planType);
-        var sessionParams = com.stripe.param.checkout.SessionCreateParams.builder()
-                .addLineItem(
-                        com.stripe.param.checkout.SessionCreateParams.LineItem
-                                .builder()
-                                .setPrice(priceId)
-                                .setQuantity(1L)
-                                .build()
-                )
+    /**
+     * 创建customer portal session
+     */
+    public String createCustomerPortalSession(String customerId) {
+        try {
+            var portalParams = buildCustomerPortalParams(customerId);
+            var portalSession = stripeClient.billingPortal().sessions().create(portalParams);
+
+            log.info("Created customer portal session for customer {}: {}", customerId, portalSession.getId());
+            return portalSession.getUrl();
+
+        } catch (Exception e) {
+            log.error("Failed to create customer portal session for customer {}: {}", customerId, e.getMessage());
+            throw new RuntimeException("Failed to create customer portal session", e);
+        }
+    }
+
+    /**
+     * 验证webhook签名并返回解析后的Event对象
+     */
+    public com.stripe.model.Event verifyAndParseWebhook(String payload, String signature) {
+        try {
+            return Webhook.constructEvent(payload, signature, stripeProperties.getWebhookSecret());
+        } catch (SignatureVerificationException e) {
+            log.warn("Invalid webhook signature: {}", e.getMessage());
+            throw new IllegalArgumentException("Invalid webhook signature", e);
+        } catch (Exception e) {
+            log.error("Failed to parse webhook event: {}", e.getMessage());
+            throw new RuntimeException("Failed to parse webhook event", e);
+        }
+    }
+
+    /**
+     * 获取订阅信息
+     */
+    public com.stripe.model.Subscription getSubscription(String subscriptionId) {
+        try {
+            return stripeClient.subscriptions().retrieve(subscriptionId);
+        } catch (Exception e) {
+            log.error("Failed to retrieve subscription {}: {}", subscriptionId, e.getMessage());
+            throw new RuntimeException("Failed to retrieve subscription", e);
+        }
+    }
+
+    // ===== 辅助方法（使用@VisibleForTesting便于单元测试） =====
+
+    @VisibleForTesting
+    com.stripe.param.checkout.SessionCreateParams buildCheckoutSessionParams(
+            String customerId, PlanType planType, String billingCycle, Long userId) {
+        var priceId = getPriceId(planType, billingCycle);
+
+        return com.stripe.param.checkout.SessionCreateParams.builder()
                 .setMode(SUBSCRIPTION)
                 .setCustomer(customerId)
-                .setSuccessUrl(successUrl)
-                .setCancelUrl(cancelUrl)
+                .addLineItem(com.stripe.param.checkout.SessionCreateParams.LineItem.builder()
+                        .setPrice(priceId)
+                        .setQuantity(1L)
+                        .build())
+                .setSuccessUrl(stripeProperties.getSuccessUrl() + "?session_id={CHECKOUT_SESSION_ID}")
+                .setCancelUrl(stripeProperties.getCancelUrl())
+                .setAllowPromotionCodes(true)
+                .setSubscriptionData(com.stripe.param.checkout.SessionCreateParams.SubscriptionData.builder()
+                        .putMetadata("user_id", userId.toString())
+                        .build())
                 .build();
-        try {
-            var session = stripeClient.checkout().sessions().create(sessionParams);
-            return session.getUrl();
-        } catch (Exception e) {
-            // Fail the request if checkout session creation fails
-            throw new RuntimeException("Failed to create Stripe checkout session", e);
-        }
+    }
+
+    @VisibleForTesting
+    SessionCreateParams buildCustomerPortalParams(String customerId) {
+        return SessionCreateParams.builder()
+                .setCustomer(customerId)
+                .setReturnUrl(stripeProperties.getReturnUrl())
+                .build();
+    }
+
+    @VisibleForTesting
+    String getPriceId(PlanType planType, String billingCycle) {
+        return switch (planType) {
+            case PRO -> "monthly".equals(billingCycle) ?
+                    stripeProperties.getProMonthlyPriceId() : stripeProperties.getProYearlyPriceId();
+            case PREMIUM -> "monthly".equals(billingCycle) ?
+                    stripeProperties.getPremiumMonthlyPriceId() : stripeProperties.getPremiumYearlyPriceId();
+            default -> throw new IllegalArgumentException("Invalid plan type for price lookup: " + planType);
+        };
+    }
+
+    @VisibleForTesting
+    String getProductId(PlanType planType) {
+        return switch (planType) {
+            case PRO -> stripeProperties.getProProductId();
+            case PREMIUM -> stripeProperties.getPremiumProductId();
+            default -> throw new IllegalArgumentException("Invalid plan type for product lookup: " + planType);
+        };
     }
 }
