@@ -2,8 +2,6 @@ package dev.aimusic.backend.credit.dao;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -23,10 +21,7 @@ import java.time.LocalDateTime;
 @Builder
 public class CreditModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "user_id", unique = true, nullable = false)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(name = "permanent_credits", nullable = false)
@@ -39,6 +34,9 @@ public class CreditModel {
 
     @Column(name = "last_reset_time")
     private LocalDateTime lastResetTime;
+
+    @Column(name = "next_reset_time")
+    private LocalDateTime nextResetTime;
 
     @CreationTimestamp
     @Column(name = "created_at")

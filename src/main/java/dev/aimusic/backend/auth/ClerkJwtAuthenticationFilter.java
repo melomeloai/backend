@@ -1,5 +1,8 @@
 package dev.aimusic.backend.auth;
 
+import com.google.common.annotations.VisibleForTesting;
+import dev.aimusic.backend.clients.clerk.ClerkService;
+import dev.aimusic.backend.user.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +25,8 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
-    private final UserAuthService userAuthService;
+    private final ClerkService clerkService;
+    private final UserService userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -32,7 +36,21 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
             var token = extractTokenFromRequest(request);
 
             if (token != null) {
-                var user = userAuthService.validateTokenAndGetUser(token);
+                var tokenModel = clerkService.authenticate(token);
+
+                var clerkId = tokenModel.getSub();
+                var email = tokenModel.getEmail();
+                var name = tokenModel.getName();
+
+                if (StringUtils.isBlank(clerkId)) {
+                    throw new IllegalArgumentException("Invalid token: missing subject");
+                }
+
+                if (StringUtils.isBlank(email)) {
+                    throw new IllegalArgumentException("Invalid token: missing email");
+                }
+
+                var user = userService.findOrCreateUser(clerkId, email, name);
                 var authentication = new ClerkAuthentication(user, token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
@@ -44,7 +62,8 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String extractTokenFromRequest(HttpServletRequest request) {
+    @VisibleForTesting
+    String extractTokenFromRequest(HttpServletRequest request) {
         var authHeader = request.getHeader(AUTHORIZATION_HEADER);
         if (StringUtils.isNotBlank(authHeader) && authHeader.startsWith(BEARER_PREFIX)) {
             return authHeader.substring(BEARER_PREFIX.length());

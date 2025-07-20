@@ -1,6 +1,6 @@
-package dev.aimusic.backend.credit;
+package dev.aimusic.backend.credit_transcation;
 
-import dev.aimusic.backend.credit.dao.TriggerSource;
+import dev.aimusic.backend.credit_transcation.dao.TriggerSource;
 import dev.aimusic.backend.subscription.dao.PlanType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

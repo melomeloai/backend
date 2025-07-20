@@ -4,8 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -25,10 +23,7 @@ import java.time.LocalDateTime;
 @Builder
 public class SubscriptionModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "user_id", unique = true, nullable = false)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(name = "stripe_customer_id", nullable = false)
@@ -42,8 +37,9 @@ public class SubscriptionModel {
     @Builder.Default
     private PlanType planType = PlanType.FREE;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "billing_cycle")
-    private String billingCycle;
+    private BillingCycle billingCycle;
 
     @Column(name = "stripe_product_id")
     private String stripeProductId;
@@ -64,9 +60,6 @@ public class SubscriptionModel {
 
     @Column(name = "current_period_end")
     private LocalDateTime currentPeriodEnd;
-
-    @Column(name = "next_reset_time")
-    private LocalDateTime nextResetTime;
 
     @CreationTimestamp
     @Column(name = "created_at")

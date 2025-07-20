@@ -2,6 +2,7 @@ package dev.aimusic.backend.webhook;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.stripe.model.Event;
+import dev.aimusic.backend.clients.stripe.StripeService;
 import dev.aimusic.backend.subscription.SubscriptionService;
 import dev.aimusic.backend.webhook.dao.WebhookEventDao;
 import dev.aimusic.backend.webhook.dao.WebhookEventModel;
@@ -27,11 +28,13 @@ public class WebhookService {
     );
     private final WebhookEventDao webhookEventDao;
     private final SubscriptionService subscriptionService;
+    private final StripeService stripeService;
 
     /**
      * 处理Stripe webhook事件
      */
-    public void processStripeEvent(Event event) {
+    public void processStripeEvent(String payload, String sigHeader) {
+        var event = stripeService.verifyAndParseWebhook(payload, sigHeader);
         // 1. 检查是否是需要处理的事件类型
         if (!HANDLED_EVENT_TYPES.contains(event.getType())) {
             log.debug("Event type {} not handled, skipping", event.getType());
@@ -45,8 +48,12 @@ public class WebhookService {
         }
 
         // 3. 记录事件（只记录需要处理的事件）
-        var webhookEvent = createWebhookEventRecord(event);
-        webhookEventDao.save(webhookEvent);
+        var webhookEvent = webhookEventDao.save(WebhookEventModel.builder()
+                .stripeEventId(event.getId())
+                .eventType(event.getType())
+                .processed(false)
+                .retryCount(0)
+                .build());
 
         try {
             // 4. 根据事件类型分发处理
@@ -63,17 +70,6 @@ public class WebhookService {
     }
 
     // ===== 辅助方法（使用@VisibleForTesting便于单元测试） =====
-
-    @VisibleForTesting
-    WebhookEventModel createWebhookEventRecord(Event event) {
-        return WebhookEventModel.builder()
-                .stripeEventId(event.getId())
-                .eventType(event.getType())
-                .eventData(event.toJson()) // 注意：这里可能需要根据数据库字段类型调整
-                .processed(false)
-                .retryCount(0)
-                .build();
-    }
 
     @VisibleForTesting
     void processEventByType(Event event) {
@@ -131,13 +127,13 @@ public class WebhookService {
     @VisibleForTesting
     void handlePaymentSuccess(Event event) {
         log.info("Handling payment success for event: {}", event.getId());
-        // 处理支付成功逻辑
+        // TODO: 处理支付成功逻辑，预留给Permanent Credits等功能
     }
 
     @VisibleForTesting
     void handlePaymentFailure(Event event) {
         log.info("Handling payment failure for event: {}", event.getId());
-        // 处理支付失败逻辑
+        // TODO: 处理支付失败逻辑，预留给Permanent Credits等功能
     }
 
     @VisibleForTesting
@@ -153,6 +149,7 @@ public class WebhookService {
         event.setErrorMessage(e.getMessage());
         webhookEventDao.save(event);
 
-        log.error("Webhook event processing failed for event {}: {}", event.getStripeEventId(), e.getMessage());
+        log.error("Webhook event processing failed for event {}: {}",
+                event.getStripeEventId(), e.getMessage());
     }
 }

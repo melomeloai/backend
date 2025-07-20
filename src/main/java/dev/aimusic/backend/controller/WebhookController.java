@@ -32,20 +32,9 @@ public class WebhookController {
     public ResponseEntity<String> handleStripeWebhook(
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String signature) {
-
-        log.info("Received Stripe webhook");
-
         try {
-            // 1. 验证webhook签名并解析事件
-            var stripeEvent = stripeService.verifyAndParseWebhook(payload, signature);
-
-            log.info("Processing webhook event: {} of type: {}", stripeEvent.getId(), stripeEvent.getType());
-
-            // 2. 处理事件
-            webhookService.processStripeEvent(stripeEvent);
-
+            webhookService.processStripeEvent(payload, signature);
             return ResponseEntity.ok("success");
-
         } catch (IllegalArgumentException e) {
             log.warn("Invalid webhook signature");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");

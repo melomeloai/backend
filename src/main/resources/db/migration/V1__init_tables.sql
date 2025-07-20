@@ -10,8 +10,7 @@ CREATE TABLE users (
 
 -- 创建用户订阅表
 CREATE TABLE subscriptions (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL, -- 去掉外键约束
+    user_id BIGINT PRIMARY KEY,
     stripe_customer_id VARCHAR(255) NOT NULL,
     stripe_subscription_id VARCHAR(255) UNIQUE, -- free plan时为null
 
@@ -28,19 +27,14 @@ CREATE TABLE subscriptions (
     -- 时间信息
     current_period_start TIMESTAMP, -- 当前周期开始时间
     current_period_end TIMESTAMP, -- 当前周期结束时间
-    next_reset_time TIMESTAMP, -- 下次积分重置时间
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    -- 约束
-    UNIQUE(user_id) -- 一个用户只能有一个订阅记录
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 创建用户积分表
 CREATE TABLE credits (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL, -- 去掉外键约束
+    user_id BIGINT PRIMARY KEY,
 
     -- 积分数量
     permanent_credits INTEGER NOT NULL DEFAULT 0, -- 永久积分
@@ -48,18 +42,16 @@ CREATE TABLE credits (
 
     -- 重置相关信息
     last_reset_time TIMESTAMP, -- 上次重置时间
+    next_reset_time TIMESTAMP, -- 下次重置时间
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    -- 约束
-    UNIQUE(user_id) -- 一个用户只能有一条积分记录
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 创建用户积分变更记录表
 CREATE TABLE credit_transactions (
     id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL, -- 去掉外键约束
+    user_id BIGINT NOT NULL,
 
     -- 交易信息
     transaction_type VARCHAR(20) NOT NULL, -- 'CONSUME', 'PURCHASE', 'REWARD', 'RESET'
@@ -77,13 +69,11 @@ CREATE TABLE credit_transactions (
 
 -- Webhook事件记录表 (用于重试和调试)
 CREATE TABLE webhook_events (
-    id BIGSERIAL PRIMARY KEY,
-    stripe_event_id VARCHAR(255) UNIQUE NOT NULL,
+    stripe_event_id TEXT PRIMARY KEY,
     event_type VARCHAR(100) NOT NULL,
     processed BOOLEAN DEFAULT FALSE,
     retry_count INTEGER DEFAULT 0,
     error_message TEXT,
-    event_data JSONB, -- 存储完整的webhook数据
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     processed_at TIMESTAMP
@@ -95,12 +85,8 @@ CREATE INDEX idx_users_clerk_id ON users(clerk_id);
 CREATE INDEX idx_users_email ON users(email);
 
 -- subscriptions 表索引
-CREATE INDEX idx_subscriptions_user_id ON subscriptions(user_id);
 CREATE INDEX idx_subscriptions_stripe_customer ON subscriptions(stripe_customer_id);
 CREATE INDEX idx_subscriptions_stripe_subscription ON subscriptions(stripe_subscription_id);
-
--- credits 表索引
-CREATE INDEX idx_credits_user_id ON credits(user_id);
 
 -- credit_transactions 表索引
 CREATE INDEX idx_credit_transactions_user_id ON credit_transactions(user_id);
@@ -108,6 +94,5 @@ CREATE INDEX idx_credit_transactions_user_time ON credit_transactions(user_id, c
 CREATE INDEX idx_credit_transactions_type ON credit_transactions(transaction_type);
 
 -- webhook_events 表索引
-CREATE INDEX idx_webhook_events_stripe_event ON webhook_events(stripe_event_id);
 CREATE INDEX idx_webhook_events_processed ON webhook_events(processed);
 CREATE INDEX idx_webhook_events_event_type ON webhook_events(event_type);

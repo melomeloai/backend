@@ -9,6 +9,7 @@ import com.stripe.param.billingportal.SessionCreateParams;
 import dev.aimusic.backend.config.StripeProperties;
 import dev.aimusic.backend.subscription.dao.PlanType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import static com.stripe.param.checkout.SessionCreateParams.Mode.SUBSCRIPTION;
@@ -24,6 +25,9 @@ public class StripeService {
         this.stripeClient = new StripeClient(stripeProperties.getSecretKey());
     }
 
+    /**
+     * 创建Stripe customer
+     */
     public String createCustomer(String email) {
         var customerParams = CustomerCreateParams.builder()
                 .setEmail(email)
@@ -87,14 +91,15 @@ public class StripeService {
     }
 
     /**
-     * 获取订阅信息
+     * 根据productId获取PlanType
      */
-    public com.stripe.model.Subscription getSubscription(String subscriptionId) {
-        try {
-            return stripeClient.subscriptions().retrieve(subscriptionId);
-        } catch (Exception e) {
-            log.error("Failed to retrieve subscription {}: {}", subscriptionId, e.getMessage());
-            throw new RuntimeException("Failed to retrieve subscription", e);
+    public PlanType getPlanTypeByProductId(String productId) {
+        if (StringUtils.equals(productId, stripeProperties.getProProductId())) {
+            return PlanType.PRO;
+        } else if (StringUtils.equals(productId, stripeProperties.getPremiumProductId())) {
+            return PlanType.PREMIUM;
+        } else {
+            throw new IllegalArgumentException("Unknown product ID: " + productId);
         }
     }
 
@@ -137,15 +142,6 @@ public class StripeService {
             case PREMIUM -> "monthly".equals(billingCycle) ?
                     stripeProperties.getPremiumMonthlyPriceId() : stripeProperties.getPremiumYearlyPriceId();
             default -> throw new IllegalArgumentException("Invalid plan type for price lookup: " + planType);
-        };
-    }
-
-    @VisibleForTesting
-    String getProductId(PlanType planType) {
-        return switch (planType) {
-            case PRO -> stripeProperties.getProProductId();
-            case PREMIUM -> stripeProperties.getPremiumProductId();
-            default -> throw new IllegalArgumentException("Invalid plan type for product lookup: " + planType);
         };
     }
 }

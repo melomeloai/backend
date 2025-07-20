@@ -1,11 +1,9 @@
 package dev.aimusic.backend.subscription.dao;
 
+import dev.aimusic.backend.common.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -14,33 +12,29 @@ public class SubscriptionDao {
 
     private final SubscriptionRepository subscriptionRepository;
 
-    public Optional<SubscriptionModel> findByUserId(Long userId) {
-        return subscriptionRepository.findByUserId(userId);
+    public SubscriptionModel findByUserId(Long userId) {
+        return subscriptionRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException("Subscription not found for user: " + userId));
     }
 
-    public Optional<SubscriptionModel> findByStripeCustomerId(String stripeCustomerId) {
-        return subscriptionRepository.findByStripeCustomerId(stripeCustomerId);
-    }
-
-    public Optional<SubscriptionModel> findByStripeSubscriptionId(String stripeSubscriptionId) {
-        return subscriptionRepository.findByStripeSubscriptionId(stripeSubscriptionId);
+    public SubscriptionModel findByStripeCustomerId(String stripeCustomerId) {
+        return subscriptionRepository.findByStripeCustomerId(stripeCustomerId)
+                .orElseThrow(() -> new NotFoundException("Subscription not found " +
+                        "for Stripe customer ID: " + stripeCustomerId));
     }
 
     public SubscriptionModel save(SubscriptionModel subscription) {
         return subscriptionRepository.save(subscription);
     }
 
-    public SubscriptionModel createDefaultSubscription(Long userId, String stripeCustomerId) {
-        var subscription = SubscriptionModel.builder()
+    public void createDefaultSubscription(Long userId, String stripeCustomerId) {
+        log.info("Creating default FREE subscription for user: {}", userId);
+        save(SubscriptionModel.builder()
                 .userId(userId)
                 .stripeCustomerId(stripeCustomerId)
                 .planType(PlanType.FREE)
                 .status("ACTIVE")
                 .cancelAtPeriodEnd(false)
-                .nextResetTime(LocalDateTime.now().plusDays(1)) // FREE plan每日重置
-                .build();
-
-        log.info("Creating default FREE subscription for user: {}", userId);
-        return save(subscription);
+                .build());
     }
 }

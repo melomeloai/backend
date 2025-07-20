@@ -28,14 +28,4 @@ public class AuthenticationUtils {
         }
         throw new IllegalArgumentException("Invalid authentication type");
     }
-
-    /**
-     * 从Authentication中获取Clerk ID
-     */
-    public static String getClerkId(Authentication authentication) {
-        if (authentication instanceof ClerkAuthentication clerkAuth) {
-            return clerkAuth.getUser().getClerkId();
-        }
-        throw new IllegalArgumentException("Invalid authentication type");
-    }
 }

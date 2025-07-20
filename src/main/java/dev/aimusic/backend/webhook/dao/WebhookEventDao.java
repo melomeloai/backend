@@ -1,12 +1,10 @@
 package dev.aimusic.backend.webhook.dao;
 
 
+import dev.aimusic.backend.common.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -15,12 +13,10 @@ public class WebhookEventDao {
 
     private final WebhookEventRepository webhookEventRepository;
 
-    public Optional<WebhookEventModel> findByStripeEventId(String stripeEventId) {
-        return webhookEventRepository.findByStripeEventId(stripeEventId);
-    }
-
-    public List<WebhookEventModel> findUnprocessedEvents() {
-        return webhookEventRepository.findByProcessedFalseOrderByCreatedAtAsc();
+    public WebhookEventModel findByStripeEventId(String stripeEventId) {
+        return webhookEventRepository.findById(stripeEventId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Webhook event not found for Stripe event ID: " + stripeEventId));
     }
 
     public WebhookEventModel save(WebhookEventModel event) {
@@ -28,7 +24,7 @@ public class WebhookEventDao {
     }
 
     public boolean isEventProcessed(String stripeEventId) {
-        return findByStripeEventId(stripeEventId)
+        return webhookEventRepository.findById(stripeEventId)
                 .map(WebhookEventModel::getProcessed)
                 .orElse(false);
     }
