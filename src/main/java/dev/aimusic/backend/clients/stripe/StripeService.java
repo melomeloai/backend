@@ -118,7 +118,7 @@ public class StripeService {
                         .setPrice(priceId)
                         .setQuantity(1L)
                         .build())
-                .setSuccessUrl(stripeProperties.getSuccessUrl() + "?session_id={CHECKOUT_SESSION_ID}")
+                .setSuccessUrl(stripeProperties.getSuccessUrl())
                 .setCancelUrl(stripeProperties.getCancelUrl())
                 .setAllowPromotionCodes(true)
                 .setSubscriptionData(com.stripe.param.checkout.SessionCreateParams.SubscriptionData.builder()

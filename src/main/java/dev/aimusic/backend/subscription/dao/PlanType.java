@@ -1,5 +1,7 @@
 package dev.aimusic.backend.subscription.dao;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,12 +16,18 @@ public enum PlanType {
     private final int resetAmount;
     private final String resetPeriod;
 
+    @JsonCreator
     public static PlanType fromString(String name) {
         for (var plan : values()) {
             if (plan.getName().equalsIgnoreCase(name)) {
                 return plan;
             }
         }
-        return FREE; // 默认返回FREE
+        throw new IllegalArgumentException("Unknown PlanType: " + name);
+    }
+
+    @JsonValue
+    public String getName() {
+        return name;
     }
 }
