@@ -49,7 +49,7 @@ public class SubscriptionService {
     /**
      * 创建Stripe checkout session
      */
-    public String createCheckoutSession(Long userId, PlanType planType, String billingCycle) {
+    public String createCheckoutSession(Long userId, PlanType planType, BillingCycle billingCycle) {
         var subscription = subscriptionDao.findByUserId(userId);
         return stripeService.createCheckoutSession(
                 subscription.getStripeCustomerId(),

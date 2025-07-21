@@ -7,6 +7,7 @@ import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.billingportal.SessionCreateParams;
 import dev.aimusic.backend.config.StripeProperties;
+import dev.aimusic.backend.subscription.dao.BillingCycle;
 import dev.aimusic.backend.subscription.dao.PlanType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +45,7 @@ public class StripeService {
     /**
      * 创建checkout session
      */
-    public String createCheckoutSession(String customerId, PlanType planType, String billingCycle, Long userId) {
+    public String createCheckoutSession(String customerId, PlanType planType, BillingCycle billingCycle, Long userId) {
         try {
             var sessionParams = buildCheckoutSessionParams(customerId, planType, billingCycle, userId);
             var session = stripeClient.checkout().sessions().create(sessionParams);
@@ -107,7 +108,7 @@ public class StripeService {
 
     @VisibleForTesting
     com.stripe.param.checkout.SessionCreateParams buildCheckoutSessionParams(
-            String customerId, PlanType planType, String billingCycle, Long userId) {
+            String customerId, PlanType planType, BillingCycle billingCycle, Long userId) {
         var priceId = getPriceId(planType, billingCycle);
 
         return com.stripe.param.checkout.SessionCreateParams.builder()
@@ -135,12 +136,16 @@ public class StripeService {
     }
 
     @VisibleForTesting
-    String getPriceId(PlanType planType, String billingCycle) {
+    String getPriceId(PlanType planType, BillingCycle billingCycle) {
         return switch (planType) {
-            case PRO -> "monthly".equals(billingCycle) ?
-                    stripeProperties.getProMonthlyPriceId() : stripeProperties.getProYearlyPriceId();
-            case PREMIUM -> "monthly".equals(billingCycle) ?
-                    stripeProperties.getPremiumMonthlyPriceId() : stripeProperties.getPremiumYearlyPriceId();
+            case PRO -> switch (billingCycle) {
+                case MONTHLY -> stripeProperties.getProMonthlyPriceId();
+                case YEARLY -> stripeProperties.getProYearlyPriceId();
+            };
+            case PREMIUM -> switch (billingCycle) {
+                case MONTHLY -> stripeProperties.getPremiumMonthlyPriceId();
+                case YEARLY -> stripeProperties.getPremiumYearlyPriceId();
+            };
             default -> throw new IllegalArgumentException("Invalid plan type for price lookup: " + planType);
         };
     }

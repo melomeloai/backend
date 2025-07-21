@@ -3,7 +3,6 @@ package dev.aimusic.backend.controller;
 import com.google.common.annotations.VisibleForTesting;
 import dev.aimusic.backend.auth.AuthenticationUtils;
 import dev.aimusic.backend.subscription.SubscriptionService;
-import dev.aimusic.backend.subscription.dao.PlanType;
 import dev.aimusic.backend.subscription.dto.CheckoutSessionResponse;
 import dev.aimusic.backend.subscription.dto.CustomerPortalResponse;
 import dev.aimusic.backend.subscription.dto.SubscriptionInfoResponse;
@@ -44,9 +43,9 @@ public class SubscriptionController {
 
     /**
      * 创建升级到Pro的checkout session
-     * POST /api/subscriptions/upgrade/pro
+     * POST /api/subscriptions/checkout
      */
-    @PostMapping("/upgrade/pro")
+    @PostMapping("/checkout")
     public ResponseEntity<CheckoutSessionResponse> createProCheckoutSession(
             Authentication auth,
             @RequestBody UpgradeRequest request) {
@@ -55,32 +54,8 @@ public class SubscriptionController {
         log.info("Creating Pro checkout session for user: {}, billingCycle: {}",
                 userId, request.getBillingCycle());
 
-        validateBillingCycle(request.getBillingCycle());
         var checkoutUrl = subscriptionService.createCheckoutSession(
-                userId, PlanType.PRO, request.getBillingCycle());
-        var response = CheckoutSessionResponse.builder()
-                .checkoutUrl(checkoutUrl)
-                .build();
-
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 创建升级到Premium的checkout session
-     * POST /api/subscriptions/upgrade/premium
-     */
-    @PostMapping("/upgrade/premium")
-    public ResponseEntity<CheckoutSessionResponse> createPremiumCheckoutSession(
-            Authentication auth,
-            @RequestBody UpgradeRequest request) {
-
-        var userId = AuthenticationUtils.getUserId(auth);
-        log.info("Creating Premium checkout session for user: {}, billingCycle: {}",
-                userId, request.getBillingCycle());
-
-        validateBillingCycle(request.getBillingCycle());
-        var checkoutUrl = subscriptionService.createCheckoutSession(
-                userId, PlanType.PREMIUM, request.getBillingCycle());
+                userId, request.getPlanType(), request.getBillingCycle());
         var response = CheckoutSessionResponse.builder()
                 .checkoutUrl(checkoutUrl)
                 .build();
