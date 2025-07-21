@@ -2,6 +2,7 @@ package dev.aimusic.backend.controller;
 
 import dev.aimusic.backend.clients.stripe.StripeService;
 import dev.aimusic.backend.webhook.WebhookService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class WebhookController {
      * 处理Stripe webhook事件
      * POST /api/webhooks/stripe
      */
+    @Hidden
     @PostMapping("/stripe")
     public ResponseEntity<String> handleStripeWebhook(
             @RequestBody String payload,

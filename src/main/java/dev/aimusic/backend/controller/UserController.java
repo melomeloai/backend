@@ -26,7 +26,7 @@ public class UserController {
      * 获取当前用户信息
      * GET /api/users/me
      */
-    @GetMapping("/me")
+    @GetMapping
     public ResponseEntity<UserResponse> getUserInfo(Authentication auth) {
         var userModel = AuthenticationUtils.getUser(auth);
         return ResponseEntity.ok(UserResponse.builder()
