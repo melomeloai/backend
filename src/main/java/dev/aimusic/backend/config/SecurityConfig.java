@@ -22,6 +22,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final ClerkJwtAuthenticationFilter clerkJwtAuthenticationFilter;
+    private final UIProperties uiProperties;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -48,7 +49,7 @@ public class SecurityConfig {
         var config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:5173", "https://frontend-two-ebon-58.vercel.app"));
+        config.setAllowedOrigins(List.of(uiProperties.getBaseUrl()));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
 
