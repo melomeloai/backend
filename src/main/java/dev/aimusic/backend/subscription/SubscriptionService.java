@@ -38,7 +38,9 @@ public class SubscriptionService {
 
         return SubscriptionInfoResponse.builder()
                 .planType(subscription.getPlanType().getName())
-                .billingCycle(subscription.getBillingCycle().name())
+                .billingCycle(subscription.getBillingCycle() != null
+                        ? subscription.getBillingCycle().name()
+                        : null)
                 .status(subscription.getStatus())
                 .cancelAtPeriodEnd(subscription.getCancelAtPeriodEnd())
                 .currentPeriodStart(subscription.getCurrentPeriodStart())
