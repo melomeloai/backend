@@ -4,6 +4,9 @@ import dev.aimusic.backend.common.exceptions.NotFoundException;
 import dev.aimusic.backend.subscription.dao.PlanType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -11,15 +14,18 @@ import java.time.LocalDateTime;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@CacheConfig(cacheNames = "credits")
 public class CreditDao {
 
     private final CreditRepository creditRepository;
 
+    @Cacheable(key = "#userId")
     public CreditModel findByUserId(Long userId) {
         return creditRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Credit record not found for user ID: " + userId));
     }
 
+    @CacheEvict(key = "#credit.userId")
     public CreditModel save(CreditModel credit) {
         return creditRepository.save(credit);
     }

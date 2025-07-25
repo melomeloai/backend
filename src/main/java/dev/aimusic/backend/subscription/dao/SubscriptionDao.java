@@ -3,15 +3,20 @@ package dev.aimusic.backend.subscription.dao;
 import dev.aimusic.backend.common.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@CacheConfig(cacheNames = "subscriptions")
 public class SubscriptionDao {
 
     private final SubscriptionRepository subscriptionRepository;
 
+    @Cacheable(key = "#userId")
     public SubscriptionModel findByUserId(Long userId) {
         return subscriptionRepository.findByUserId(userId)
                 .orElseThrow(() -> new NotFoundException("Subscription not found for user: " + userId));
@@ -23,6 +28,7 @@ public class SubscriptionDao {
                         "for Stripe customer ID: " + stripeCustomerId));
     }
 
+    @CacheEvict(key = "#subscription.userId")
     public SubscriptionModel save(SubscriptionModel subscription) {
         return subscriptionRepository.save(subscription);
     }
