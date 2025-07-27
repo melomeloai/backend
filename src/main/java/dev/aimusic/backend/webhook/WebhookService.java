@@ -43,7 +43,7 @@ public class WebhookService {
 
         // 2. 检查事件是否已处理（幂等性）
         if (webhookEventDao.isEventProcessed(event.getId())) {
-            log.info("Event {} already processed, skipping", event.getId());
+            log.debug("Event {} already processed, skipping", event.getId());
             return;
         }
 
@@ -102,7 +102,7 @@ public class WebhookService {
 
     @VisibleForTesting
     void handleSubscriptionChange(Event event) {
-        log.info("Handling subscription change for event: {}", event.getId());
+        log.debug("Handling subscription change for event: {}", event.getId());
         try {
             var stripeSubscription = parseStripeSubscription(event);
             subscriptionService.handleSubscriptionChange(stripeSubscription);
@@ -114,7 +114,7 @@ public class WebhookService {
 
     @VisibleForTesting
     void handleSubscriptionCancellation(Event event) {
-        log.info("Handling subscription cancellation for event: {}", event.getId());
+        log.debug("Handling subscription cancellation for event: {}", event.getId());
         try {
             var stripeSubscription = parseStripeSubscription(event);
             subscriptionService.handleSubscriptionCancellation(stripeSubscription);
@@ -126,13 +126,13 @@ public class WebhookService {
 
     @VisibleForTesting
     void handlePaymentSuccess(Event event) {
-        log.info("Handling payment success for event: {}", event.getId());
+        log.debug("Handling payment success for event: {}", event.getId());
         // TODO: 处理支付成功逻辑，预留给Permanent Credits等功能
     }
 
     @VisibleForTesting
     void handlePaymentFailure(Event event) {
-        log.info("Handling payment failure for event: {}", event.getId());
+        log.debug("Handling payment failure for event: {}", event.getId());
         // TODO: 处理支付失败逻辑，预留给Permanent Credits等功能
     }
 

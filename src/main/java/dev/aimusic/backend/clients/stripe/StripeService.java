@@ -49,8 +49,6 @@ public class StripeService {
         try {
             var sessionParams = buildCheckoutSessionParams(customerId, planType, billingCycle, userId);
             var session = stripeClient.checkout().sessions().create(sessionParams);
-
-            log.info("Created checkout session for customer {}: {}", customerId, session.getId());
             return session.getUrl();
 
         } catch (Exception e) {
@@ -66,10 +64,7 @@ public class StripeService {
         try {
             var portalParams = buildCustomerPortalParams(customerId);
             var portalSession = stripeClient.billingPortal().sessions().create(portalParams);
-
-            log.info("Created customer portal session for customer {}: {}", customerId, portalSession.getId());
             return portalSession.getUrl();
-
         } catch (Exception e) {
             log.error("Failed to create customer portal session for customer {}: {}", customerId, e.getMessage());
             throw new RuntimeException("Failed to create customer portal session", e);

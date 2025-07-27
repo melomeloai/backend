@@ -29,8 +29,6 @@ public class CreditController {
     @GetMapping
     public ResponseEntity<CreditInfoResponse> getCreditInfo(Authentication auth) {
         var userId = AuthenticationUtils.getUserId(auth);
-        log.info("Getting credit info for user: {}", userId);
-
         var response = creditService.getUserCreditInfo(userId);
         return ResponseEntity.ok(response);
     }

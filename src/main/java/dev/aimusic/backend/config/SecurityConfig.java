@@ -1,5 +1,6 @@
 package dev.aimusic.backend.config;
 
+import dev.aimusic.backend.audit.AuditLogFilter;
 import dev.aimusic.backend.auth.ClerkJwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,8 +21,8 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final ClerkJwtAuthenticationFilter clerkJwtAuthenticationFilter;
+    private final AuditLogFilter auditLogFilter;
     private final UIProperties uiProperties;
 
     @Bean
@@ -32,14 +33,14 @@ public class SecurityConfig {
                         .configurationSource(corsConfigurationSource()))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(auditLogFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(clerkJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/webhooks/**").permitAll() // webhook端点允许未认证访问
                         .requestMatchers("/api/public/**").permitAll()   // 公开API
                         .requestMatchers("/api/**").authenticated()       // 其他API需要认证
                         .anyRequest().permitAll()
-                )
-                .addFilterBefore(clerkJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        ;
+                );
 
         return http.build();
     }

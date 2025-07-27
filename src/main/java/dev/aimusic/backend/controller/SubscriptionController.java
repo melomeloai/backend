@@ -1,6 +1,5 @@
 package dev.aimusic.backend.controller;
 
-import com.google.common.annotations.VisibleForTesting;
 import dev.aimusic.backend.auth.AuthenticationUtils;
 import dev.aimusic.backend.subscription.SubscriptionService;
 import dev.aimusic.backend.subscription.dto.CheckoutSessionResponse;
@@ -35,8 +34,6 @@ public class SubscriptionController {
     @GetMapping
     public ResponseEntity<SubscriptionInfoResponse> getSubscriptionInfo(Authentication auth) {
         var userId = AuthenticationUtils.getUserId(auth);
-        log.info("Getting subscription info for user: {}", userId);
-
         var response = subscriptionService.getUserSubscriptionInfo(userId);
         return ResponseEntity.ok(response);
     }
@@ -49,11 +46,7 @@ public class SubscriptionController {
     public ResponseEntity<CheckoutSessionResponse> createProCheckoutSession(
             Authentication auth,
             @RequestBody UpgradeRequest request) {
-
         var userId = AuthenticationUtils.getUserId(auth);
-        log.info("Creating Pro checkout session for user: {}, billingCycle: {}",
-                userId, request.getBillingCycle());
-
         var checkoutUrl = subscriptionService.createCheckoutSession(
                 userId, request.getPlanType(), request.getBillingCycle());
         var response = CheckoutSessionResponse.builder()
@@ -71,7 +64,6 @@ public class SubscriptionController {
     public ResponseEntity<CustomerPortalResponse> createCustomerPortalSession(
             Authentication auth) {
         var userId = AuthenticationUtils.getUserId(auth);
-        log.info("Creating customer portal session for user: {}", userId);
 
         var portalUrl = subscriptionService.createCustomerPortalSession(userId);
         var response = CustomerPortalResponse.builder()
@@ -79,14 +71,5 @@ public class SubscriptionController {
                 .build();
 
         return ResponseEntity.ok(response);
-    }
-
-    // ===== 辅助方法（使用@VisibleForTesting便于单元测试） =====
-
-    @VisibleForTesting
-    void validateBillingCycle(String billingCycle) {
-        if (!"monthly".equals(billingCycle) && !"yearly".equals(billingCycle)) {
-            throw new IllegalArgumentException("Invalid billing cycle: " + billingCycle);
-        }
     }
 }

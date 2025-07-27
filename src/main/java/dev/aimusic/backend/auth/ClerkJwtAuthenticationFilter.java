@@ -16,10 +16,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// ===== 11. JWT认证过滤器 =====
+import static dev.aimusic.backend.common.Constants.X_USER_ID;
+
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
@@ -53,6 +54,7 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
                 var user = userService.findOrCreateUser(clerkId, email, name);
                 var authentication = new ClerkAuthentication(user, token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                response.setHeader(X_USER_ID, String.valueOf(user.getId()));
             }
         } catch (Exception e) {
             log.debug("JWT authentication failed: {}", e.getMessage());
