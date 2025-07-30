@@ -1,5 +1,5 @@
 -- 创建用户表
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     clerk_id VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE users (
 );
 
 -- 创建用户订阅表
-CREATE TABLE subscriptions (
+CREATE TABLE IF NOT EXISTS subscriptions (
     user_id BIGINT PRIMARY KEY,
     stripe_customer_id VARCHAR(255) NOT NULL,
     stripe_subscription_id VARCHAR(255) UNIQUE, -- free plan时为null
@@ -33,7 +33,7 @@ CREATE TABLE subscriptions (
 );
 
 -- 创建用户积分表
-CREATE TABLE credits (
+CREATE TABLE IF NOT EXISTS credits (
     user_id BIGINT PRIMARY KEY,
 
     -- 积分数量
@@ -49,7 +49,7 @@ CREATE TABLE credits (
 );
 
 -- 创建用户积分变更记录表
-CREATE TABLE credit_transactions (
+CREATE TABLE IF NOT EXISTS credit_transactions (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
 
@@ -68,7 +68,7 @@ CREATE TABLE credit_transactions (
 );
 
 -- Webhook事件记录表 (用于重试和调试)
-CREATE TABLE webhook_events (
+CREATE TABLE IF NOT EXISTS webhook_events (
     stripe_event_id TEXT PRIMARY KEY,
     event_type VARCHAR(100) NOT NULL,
     processed BOOLEAN DEFAULT FALSE,
@@ -81,18 +81,18 @@ CREATE TABLE webhook_events (
 
 -- 创建索引
 -- users 表索引
-CREATE INDEX idx_users_clerk_id ON users(clerk_id);
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- subscriptions 表索引
-CREATE INDEX idx_subscriptions_stripe_customer ON subscriptions(stripe_customer_id);
-CREATE INDEX idx_subscriptions_stripe_subscription ON subscriptions(stripe_subscription_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer ON subscriptions(stripe_customer_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_subscription ON subscriptions(stripe_subscription_id);
 
 -- credit_transactions 表索引
-CREATE INDEX idx_credit_transactions_user_id ON credit_transactions(user_id);
-CREATE INDEX idx_credit_transactions_user_time ON credit_transactions(user_id, created_at);
-CREATE INDEX idx_credit_transactions_type ON credit_transactions(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_user_id ON credit_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_user_time ON credit_transactions(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_type ON credit_transactions(transaction_type);
 
 -- webhook_events 表索引
-CREATE INDEX idx_webhook_events_processed ON webhook_events(processed);
-CREATE INDEX idx_webhook_events_event_type ON webhook_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_webhook_events_processed ON webhook_events(processed);
+CREATE INDEX IF NOT EXISTS idx_webhook_events_event_type ON webhook_events(event_type);
