@@ -1,13 +1,11 @@
 package dev.aimusic.backend.subscription;
 
 import dev.aimusic.backend.clients.stripe.StripeService;
-import dev.aimusic.backend.config.StripeProperties;
 import dev.aimusic.backend.credit.CreditService;
 import dev.aimusic.backend.subscription.dao.BillingCycle;
 import dev.aimusic.backend.subscription.dao.PlanType;
 import dev.aimusic.backend.subscription.dao.SubscriptionDao;
 import dev.aimusic.backend.subscription.dto.SubscriptionInfoResponse;
-import dev.aimusic.backend.user.dao.UserDao;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +22,8 @@ import java.util.Objects;
 public class SubscriptionService {
 
     private final SubscriptionDao subscriptionDao;
-    private final UserDao userDao;
     private final CreditService creditService;
     private final StripeService stripeService;
-    private final StripeProperties stripeProperties;
 
     /**
      * 获取用户订阅信息

@@ -1,4 +1,4 @@
-package dev.aimusic.backend.common;
+package dev.aimusic.backend.common.dto;
 
 import lombok.Builder;
 import lombok.Data;

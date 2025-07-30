@@ -2,6 +2,7 @@ package dev.aimusic.backend.auth;
 
 import com.google.common.annotations.VisibleForTesting;
 import dev.aimusic.backend.clients.clerk.ClerkService;
+import dev.aimusic.backend.common.exceptions.AuthenticationException;
 import dev.aimusic.backend.user.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -44,11 +45,11 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
                 var name = tokenModel.getName();
 
                 if (StringUtils.isBlank(clerkId)) {
-                    throw new IllegalArgumentException("Invalid token: missing subject");
+                    throw new AuthenticationException("Invalid token: missing subject");
                 }
 
                 if (StringUtils.isBlank(email)) {
-                    throw new IllegalArgumentException("Invalid token: missing email");
+                    throw new AuthenticationException("Invalid token: missing email");
                 }
 
                 var user = userService.findOrCreateUser(clerkId, email, name);

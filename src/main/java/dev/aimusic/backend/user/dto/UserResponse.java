@@ -1,6 +1,6 @@
 package dev.aimusic.backend.user.dto;
 
-import dev.aimusic.backend.common.AbstractResponse;
+import dev.aimusic.backend.common.dto.AbstractResponse;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
