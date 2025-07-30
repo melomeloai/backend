@@ -25,23 +25,23 @@ public class UserService {
     /**
      * 初始化新用户（在用户首次登录时调用）
      */
-    public UserModel findOrCreateUser(String clerkId, String email, String name) {
+    public void findOrCreateUser(String clerkId, String email, String name) {
         // 1. 查找或创建用户
         try {
-            return userDao.findByClerkId(clerkId);
+            userDao.findByClerkId(clerkId);
         } catch (NotFoundException ignored) {
             log.info("User not found, creating new user with clerkId: {}", clerkId);
             try {
-                return createUser(clerkId, email, name);
+                createUser(clerkId, email, name);
             } catch (DataIntegrityViolationException e) {
                 // 尝试查找已存在的用户
-                return userDao.findByClerkId(clerkId);
+                userDao.findByClerkId(clerkId);
             }
         }
     }
 
     @Transactional
-    public UserModel createUser(String clerkId, String email, String name) {
+    public void createUser(String clerkId, String email, String name) {
         var user = userDao.save(UserModel.builder()
                 .clerkId(clerkId)
                 .email(email)
@@ -58,6 +58,5 @@ public class UserService {
         creditDao.createDefaultCredit(user.getId());
 
         log.info("Successfully initialized new user: {}, email: {}", user.getId(), email);
-        return user;
     }
 }

@@ -36,8 +36,9 @@ public class SecurityConfig {
                 .addFilterBefore(auditLogFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(clerkJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/webhooks/**").permitAll() // webhook端点允许未认证访问
                         .requestMatchers("/api/public/**").permitAll()   // 公开API
+                        .requestMatchers("/api/webhooks/**").permitAll() // webhook端点允许未认证访问
+                        .requestMatchers("/api/auth/login").permitAll()   // 登录API允许未认证访问
                         .requestMatchers("/api/**").authenticated()       // 其他API需要认证
                         .anyRequest().permitAll()
                 );

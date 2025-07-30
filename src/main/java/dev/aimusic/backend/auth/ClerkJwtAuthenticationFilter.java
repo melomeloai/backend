@@ -1,9 +1,8 @@
 package dev.aimusic.backend.auth;
 
-import com.google.common.annotations.VisibleForTesting;
 import dev.aimusic.backend.clients.clerk.ClerkService;
 import dev.aimusic.backend.common.exceptions.AuthenticationException;
-import dev.aimusic.backend.user.UserService;
+import dev.aimusic.backend.user.dao.UserDao;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,35 +23,25 @@ import static dev.aimusic.backend.common.Constants.X_USER_ID;
 @RequiredArgsConstructor
 public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
-
     private final ClerkService clerkService;
-    private final UserService userService;
+    private final UserDao userDao;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
         try {
-            var token = extractTokenFromRequest(request);
+            var token = AuthenticationUtils.extractTokenFromRequest(request);
 
             if (token != null) {
                 var tokenModel = clerkService.authenticate(token);
-
                 var clerkId = tokenModel.getSub();
-                var email = tokenModel.getEmail();
-                var name = tokenModel.getName();
 
                 if (StringUtils.isBlank(clerkId)) {
                     throw new AuthenticationException("Invalid token: missing subject");
                 }
 
-                if (StringUtils.isBlank(email)) {
-                    throw new AuthenticationException("Invalid token: missing email");
-                }
-
-                var user = userService.findOrCreateUser(clerkId, email, name);
+                var user = userDao.findByClerkId(clerkId);
                 var authentication = new ClerkAuthentication(user, token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 response.setHeader(X_USER_ID, String.valueOf(user.getId()));
@@ -65,12 +54,4 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    @VisibleForTesting
-    String extractTokenFromRequest(HttpServletRequest request) {
-        var authHeader = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.isNotBlank(authHeader) && authHeader.startsWith(BEARER_PREFIX)) {
-            return authHeader.substring(BEARER_PREFIX.length());
-        }
-        return null;
-    }
 }
