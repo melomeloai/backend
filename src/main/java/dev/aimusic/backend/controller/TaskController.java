@@ -1,14 +1,23 @@
 package dev.aimusic.backend.controller;
 
 import dev.aimusic.backend.auth.AuthenticationUtils;
+import dev.aimusic.backend.credit_transcation.dao.TriggerSource;
+import dev.aimusic.backend.task.TaskService;
 import dev.aimusic.backend.task.dto.MusicGenerationRequest;
 import dev.aimusic.backend.task.dto.TaskListResponse;
 import dev.aimusic.backend.task.dto.TaskResponse;
+import dev.aimusic.backend.user.dao.UserDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import static dev.aimusic.backend.common.Constants.API_PATH;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -19,6 +28,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping(value = API_PATH + "/tasks", produces = {APPLICATION_JSON_VALUE})
 public class TaskController {
 
+    private final TaskService taskService;
+    private final UserDao userDao;
+
     /**
      * 提交音乐生成任务
      * POST /api/tasks
@@ -28,13 +40,8 @@ public class TaskController {
             @RequestBody MusicGenerationRequest request,
             Authentication auth) {
         var userId = AuthenticationUtils.getUserId(auth);
-        log.info("User {} submitting music generation task: {}", userId, request.getTaskType());
-        
-        // TODO: 实现任务提交逻辑
-        var response = TaskResponse.builder()
-                .taskId("temp-task-id")
-                .build();
-        
+
+        var response = taskService.submitTask(userId, request, TriggerSource.UI);
         return ResponseEntity.ok(response);
     }
 
@@ -48,11 +55,8 @@ public class TaskController {
             @RequestParam(defaultValue = "10") int pageSize,
             Authentication auth) {
         var userId = AuthenticationUtils.getUserId(auth);
-        log.info("User {} requesting tasks list, page: {}, pageSize: {}", userId, page, pageSize);
-        
-        // TODO: 实现任务列表查询逻辑
-        var response = TaskListResponse.builder().build();
-        
+
+        var response = taskService.getUserTasks(userId, page, pageSize);
         return ResponseEntity.ok(response);
     }
 
@@ -65,34 +69,11 @@ public class TaskController {
             @PathVariable String taskId,
             Authentication auth) {
         var userId = AuthenticationUtils.getUserId(auth);
-        log.info("User {} requesting task {} status", userId, taskId);
-        
-        // TODO: 实现单个任务查询逻辑
-        var response = TaskResponse.builder()
-                .taskId(taskId)
-                .build();
-        
+
+        var response = taskService.getTask(taskId, userId);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 取消任务
-     * DELETE /api/tasks/{taskId}
-     */
-    @DeleteMapping("/{taskId}")
-    public ResponseEntity<TaskResponse> cancelTask(
-            @PathVariable String taskId,
-            Authentication auth) {
-        var userId = AuthenticationUtils.getUserId(auth);
-        log.info("User {} cancelling task {}", userId, taskId);
-        
-        // TODO: 实现任务取消逻辑
-        var response = TaskResponse.builder()
-                .taskId(taskId)
-                .build();
-        
-        return ResponseEntity.ok(response);
-    }
 
     /**
      * 重试任务
@@ -103,13 +84,8 @@ public class TaskController {
             @PathVariable String taskId,
             Authentication auth) {
         var userId = AuthenticationUtils.getUserId(auth);
-        log.info("User {} retrying task {}", userId, taskId);
-        
-        // TODO: 实现任务重试逻辑
-        var response = TaskResponse.builder()
-                .taskId(taskId)
-                .build();
-        
+
+        var response = taskService.retryTask(taskId, userId);
         return ResponseEntity.ok(response);
     }
 }

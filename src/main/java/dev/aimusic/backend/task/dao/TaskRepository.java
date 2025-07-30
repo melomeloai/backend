@@ -11,15 +11,13 @@ import java.util.Optional;
 
 @Repository
 public interface TaskRepository extends JpaRepository<TaskModel, Long> {
-    Optional<TaskModel> findByTaskId(String taskId);
+    Optional<TaskModel> findByTaskIdAndUserId(String taskId, Long userId);
     
-    Page<TaskModel> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
-    
-    Optional<TaskModel> findByTaskIdAndUserId(String taskId, String userId);
+    Page<TaskModel> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     
     @Query("SELECT t FROM TaskModel t WHERE t.userId = :userId AND t.status IN :statuses ORDER BY t.createdAt DESC")
     Page<TaskModel> findByUserIdAndStatusInOrderByCreatedAtDesc(
-            @Param("userId") String userId, 
+            @Param("userId") Long userId, 
             @Param("statuses") TaskStatus[] statuses, 
             Pageable pageable);
 }

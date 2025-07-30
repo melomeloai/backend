@@ -1,5 +1,6 @@
 package dev.aimusic.backend.task.dao;
 
+import dev.aimusic.backend.credit_transcation.dao.TriggerSource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +26,7 @@ public class TaskModel {
     private String taskId;
 
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private Long userId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "task_type", nullable = false)
@@ -37,6 +38,10 @@ public class TaskModel {
 
     @Column(name = "priority", nullable = false)
     private Integer priority;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trigger_source", nullable = false)
+    private TriggerSource triggerSource;
 
     @Column(name = "prompt", columnDefinition = "TEXT")
     private String prompt;
@@ -61,6 +66,9 @@ public class TaskModel {
 
     @Column(name = "parameters", columnDefinition = "TEXT")
     private String parameters;
+
+    @Column(name = "credits_consumed")
+    private Integer creditsConsumed;
 
     @CreationTimestamp
     @Column(name = "created_at")

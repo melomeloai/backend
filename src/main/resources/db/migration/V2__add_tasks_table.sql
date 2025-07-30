@@ -2,12 +2,13 @@
 CREATE TABLE IF NOT EXISTS tasks (
     id BIGSERIAL PRIMARY KEY,
     task_id VARCHAR(255) UNIQUE NOT NULL,
-    user_id VARCHAR(255) NOT NULL,
+    user_id BIGINT NOT NULL,
     
     -- 任务基本信息
     task_type VARCHAR(50) NOT NULL, -- 'TEXT_TO_MUSIC', 'MUSIC_EDITING', 'VIDEO_SOUNDTRACK'
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED'
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED'
     priority INTEGER NOT NULL DEFAULT 0,
+    trigger_source VARCHAR(20) NOT NULL, -- 'UI', 'API'
     
     -- 任务参数
     prompt TEXT,
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     result_audio_url VARCHAR(1000),
     error_message TEXT,
     progress INTEGER DEFAULT 0,
+    credits_consumed INTEGER,
     
     -- 时间戳
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

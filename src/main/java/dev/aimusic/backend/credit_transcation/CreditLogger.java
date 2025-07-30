@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 public class CreditLogger {
 
     public void logCreditConsumption(Long userId, Integer amount, TriggerSource triggerSource,
-                                     String taskType, Integer permanentAfter, Integer renewableAfter) {
+                                     String taskId, Integer permanentAfter, Integer renewableAfter) {
         log.info("Credit consumed - UserId: {}, Amount: {}, Source: {}, Task: {}, PermanentAfter: {}, RenewableAfter: {}",
-                userId, amount, triggerSource, taskType, permanentAfter, renewableAfter);
+                userId, amount, triggerSource, taskId, permanentAfter, renewableAfter);
     }
 
     public void logCreditReset(Long userId, PlanType planType, Integer newAmount, LocalDateTime nextResetTime) {

@@ -1,7 +1,7 @@
 package dev.aimusic.backend.task.dto;
 
-import dev.aimusic.backend.common.AbstractResponse;
-import dev.aimusic.backend.common.PaginationInfo;
+import dev.aimusic.backend.common.dto.AbstractResponse;
+import dev.aimusic.backend.common.dto.PaginationInfo;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
