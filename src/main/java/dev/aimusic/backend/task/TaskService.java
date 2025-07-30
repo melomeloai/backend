@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import dev.aimusic.backend.common.dto.PaginationInfo;
 import dev.aimusic.backend.credit.CreditConsumeService;
 import dev.aimusic.backend.credit_transcation.dao.TriggerSource;
+import dev.aimusic.backend.subscription.dao.SubscriptionDao;
 import dev.aimusic.backend.task.dao.TaskDao;
 import dev.aimusic.backend.task.dao.TaskModel;
 import dev.aimusic.backend.task.dao.TaskStatus;
@@ -25,18 +26,26 @@ import java.util.UUID;
 public class TaskService {
 
     private final TaskDao taskDao;
+    private final SubscriptionDao subscriptionDao;
     private final CreditConsumeService creditConsumeService;
 
     /**
      * 提交音乐生成任务
      */
-    public TaskResponse submitTask(Long userId, MusicGenerationRequest request, TriggerSource triggerSource) {
-        log.info("User {} submitting task: {}", userId, request.getTaskType());
+    public TaskResponse submitTask(Long userId,
+                                   MusicGenerationRequest request,
+                                   TriggerSource triggerSource) {
+        var subscription = subscriptionDao.findByUserId(userId);
 
         // TODO: 验证请求参数
-        // validator.validateTaskSubmission(user, request);
+        // validator.validateTaskSubmission(user, subscription, request);
 
-        var requiredCredits = calculateRequiredCredits(request);
+        var requiredCredits = CreditUtils.calculateRequiredCredits(request);
+
+        var priority = PriorityUtils.calculatePriority(
+                subscription.getPlanType(),
+                request.getTaskType()
+        );
 
         // 创建任务
         var task = TaskModel.builder()
@@ -44,7 +53,7 @@ public class TaskService {
                 .userId(userId)
                 .taskType(request.getTaskType())
                 .status(TaskStatus.PENDING)
-                .priority(calculatePriority(userId, request))
+                .priority(priority)
                 .triggerSource(triggerSource)
                 .prompt(request.getPrompt())
                 .duration(request.getDuration())
@@ -126,26 +135,6 @@ public class TaskService {
         // queueService.submitTask(savedTask);
 
         return mapToResponse(savedTask);
-    }
-
-    @VisibleForTesting
-    Integer calculatePriority(Long userId, MusicGenerationRequest request) {
-        // TODO: 根据用户订阅计划和任务类型计算优先级
-        // var subscription = subscriptionDao.findByUserId(user.getId());
-        // return priorityCalculator.calculate(subscription.getPlanType(), request.getTaskType());
-        return 0; // 默认优先级
-    }
-
-    @VisibleForTesting
-    Integer calculateRequiredCredits(MusicGenerationRequest request) {
-        var duration = request.getDuration() != null ? request.getDuration() : 30; // 默认30秒
-        var minutes = Math.max(1, (duration + 59) / 60); // 向上取整到分钟
-
-        return switch (request.getTaskType()) {
-            case TEXT_TO_MUSIC -> 1; // 固定1积分
-            case MUSIC_EDITING -> minutes * 5; // 每分钟5积分
-            case VIDEO_SOUNDTRACK -> minutes * 10; // 每分钟10积分
-        };
     }
 
     @VisibleForTesting

@@ -6,7 +6,6 @@ import dev.aimusic.backend.task.TaskService;
 import dev.aimusic.backend.task.dto.MusicGenerationRequest;
 import dev.aimusic.backend.task.dto.TaskListResponse;
 import dev.aimusic.backend.task.dto.TaskResponse;
-import dev.aimusic.backend.user.dao.UserDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +28,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class TaskController {
 
     private final TaskService taskService;
-    private final UserDao userDao;
 
     /**
      * 提交音乐生成任务
@@ -73,7 +71,6 @@ public class TaskController {
         var response = taskService.getTask(taskId, userId);
         return ResponseEntity.ok(response);
     }
-
 
     /**
      * 重试任务
