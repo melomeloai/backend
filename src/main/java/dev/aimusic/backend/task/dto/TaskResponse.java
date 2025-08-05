@@ -2,6 +2,7 @@ package dev.aimusic.backend.task.dto;
 
 import dev.aimusic.backend.common.dto.AbstractResponse;
 import dev.aimusic.backend.credit_transcation.dao.TriggerSource;
+import dev.aimusic.backend.task.dao.SourceType;
 import dev.aimusic.backend.task.dao.TaskStatus;
 import dev.aimusic.backend.task.dao.TaskType;
 import lombok.Builder;
@@ -23,8 +24,10 @@ public class TaskResponse extends AbstractResponse {
     private TriggerSource triggerSource;
     private String prompt;
     private Integer duration;
-    private String sourceAudioUrl;
-    private String sourceVideoUrl;
+    private String audioSource;
+    private SourceType audioSourceType;
+    private String videoSource;
+    private SourceType videoSourceType;
     private String resultAudioUrl;     // 生成的音频文件URL
     private String errorMessage;       // 错误信息
     private Integer progress;          // 进度百分比(0-100)

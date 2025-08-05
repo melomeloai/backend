@@ -52,3 +52,11 @@ stripe:
   pro-yearly-price-id: ${STRIPE_PRO_YEARLY_PRICE_ID}
   premium-monthly-price-id: ${STRIPE_PREMIUM_MONTHLY_PRICE_ID}
   premium-yearly-price-id: ${STRIPE_PREMIUM_YEARLY_PRICE_ID}
+
+r2:
+  endpoint: ${R2_ENDPOINT}
+  access-key: ${R2_ACCESS_KEY}
+  secret-key: ${R2_SECRET_KEY}
+  bucket-name: ${R2_BUCKET_NAME}
+  region: ${R2_REGION:auto}
+  public-domain: ${R2_PUBLIC_DOMAIN}

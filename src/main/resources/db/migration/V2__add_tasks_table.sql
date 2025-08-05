@@ -13,8 +13,10 @@ CREATE TABLE IF NOT EXISTS tasks (
     -- 任务参数
     prompt TEXT,
     duration INTEGER,
-    source_audio_url VARCHAR(1000),
-    source_video_url VARCHAR(1000),
+    audio_source VARCHAR(1000),
+    audio_source_type VARCHAR(20) CHECK (audio_source_type IN ('URL', 'FILE_KEY')),
+    video_source VARCHAR(1000),
+    video_source_type VARCHAR(20) CHECK (video_source_type IN ('URL', 'FILE_KEY')),
     parameters TEXT, -- JSON格式存储其他参数
     
     -- 任务结果

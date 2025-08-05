@@ -11,6 +11,8 @@ import dev.aimusic.backend.task.dao.TaskStatus;
 import dev.aimusic.backend.task.dto.MusicGenerationRequest;
 import dev.aimusic.backend.task.dto.TaskListResponse;
 import dev.aimusic.backend.task.dto.TaskResponse;
+import dev.aimusic.backend.common.exceptions.ValidationException;
+import dev.aimusic.backend.task.dao.SourceType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -37,8 +39,8 @@ public class TaskService {
                                    TriggerSource triggerSource) {
         var subscription = subscriptionDao.findByUserId(userId);
 
-        // TODO: 验证请求参数
-        // validator.validateTaskSubmission(user, subscription, request);
+        // 验证请求参数
+        validateTaskRequest(request);
 
         var requiredCredits = CreditUtils.calculateRequiredCredits(request);
 
@@ -57,8 +59,10 @@ public class TaskService {
                 .triggerSource(triggerSource)
                 .prompt(request.getPrompt())
                 .duration(request.getDuration())
-                .sourceAudioUrl(request.getSourceAudioUrl())
-                .sourceVideoUrl(request.getSourceVideoUrl())
+                .audioSource(request.getAudioSource())
+                .audioSourceType(request.getAudioSourceType())
+                .videoSource(request.getVideoSource())
+                .videoSourceType(request.getVideoSourceType())
                 .parameters(request.getParameters())
                 .progress(0)
                 .creditsConsumed(requiredCredits)
@@ -73,6 +77,46 @@ public class TaskService {
         // queueService.submitTask(savedTask);
 
         return mapToResponse(savedTask);
+    }
+
+    private void validateTaskRequest(MusicGenerationRequest request) {
+        // 验证音频源
+        if (request.getAudioSource() != null) {
+            if (request.getAudioSourceType() == null) {
+                throw new ValidationException("audioSourceType is required when audioSource is provided");
+            }
+        } else if (request.getAudioSourceType() != null) {
+            throw new ValidationException("audioSource is required when audioSourceType is provided");
+        }
+
+        // 验证视频源
+        if (request.getVideoSource() != null) {
+            if (request.getVideoSourceType() == null) {
+                throw new ValidationException("videoSourceType is required when videoSource is provided");
+            }
+        } else if (request.getVideoSourceType() != null) {
+            throw new ValidationException("videoSource is required when videoSourceType is provided");
+        }
+
+        // 验证源的格式
+        validateSourceFormat(request.getAudioSource(), request.getAudioSourceType(), "audio");
+        validateSourceFormat(request.getVideoSource(), request.getVideoSourceType(), "video");
+    }
+
+    private void validateSourceFormat(String source, SourceType sourceType, String mediaType) {
+        if (source == null || sourceType == null) {
+            return; // 允许为空
+        }
+
+        if (sourceType == SourceType.URL) {
+            if (!source.startsWith("http://") && !source.startsWith("https://")) {
+                throw new ValidationException(mediaType + " source must be a valid URL when sourceType is URL");
+            }
+        } else if (sourceType == SourceType.FILE_KEY) {
+            if (source.startsWith("http://") || source.startsWith("https://")) {
+                throw new ValidationException(mediaType + " source must be a file key when sourceType is FILE_KEY");
+            }
+        }
     }
 
     /**
@@ -146,8 +190,10 @@ public class TaskService {
                 .triggerSource(task.getTriggerSource())
                 .prompt(task.getPrompt())
                 .duration(task.getDuration())
-                .sourceAudioUrl(task.getSourceAudioUrl())
-                .sourceVideoUrl(task.getSourceVideoUrl())
+                .audioSource(task.getAudioSource())
+                .audioSourceType(task.getAudioSourceType())
+                .videoSource(task.getVideoSource())
+                .videoSourceType(task.getVideoSourceType())
                 .resultAudioUrl(task.getResultAudioUrl())
                 .errorMessage(task.getErrorMessage())
                 .progress(task.getProgress())

@@ -49,11 +49,19 @@ public class TaskModel {
     @Column(name = "duration")
     private Integer duration;
 
-    @Column(name = "source_audio_url")
-    private String sourceAudioUrl;
+    @Column(name = "audio_source")
+    private String audioSource;
 
-    @Column(name = "source_video_url")
-    private String sourceVideoUrl;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "audio_source_type")
+    private SourceType audioSourceType;
+
+    @Column(name = "video_source")
+    private String videoSource;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "video_source_type")
+    private SourceType videoSourceType;
 
     @Column(name = "result_audio_url")
     private String resultAudioUrl;
